@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class MedicinePhotoScreen extends StatelessWidget {
-  const MedicinePhotoScreen({Key? key}) : super(key: key);
+  const MedicinePhotoScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

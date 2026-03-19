@@ -6,7 +6,7 @@ void main() {
 }
 
 class CareSync extends StatelessWidget {
-  const CareSync({Key? key}) : super(key: key);
+  const CareSync({super.key});
 
   @override
   Widget build(BuildContext context) {
