@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/splash_screen.dart';
 import 'services/reminder_service.dart';
 import 'services/voice_service.dart';
+import 'config/api_keys.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize services
+  // Initialize Supabase
+  await Supabase.initialize(
+    url: ApiKeys.supabaseUrl,
+    anonKey: ApiKeys.supabaseAnonKey,
+  );
+  
+  // Initialize other services
   await ReminderService.initialize();
   await VoiceService.initialize();
   
