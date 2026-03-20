@@ -7,22 +7,22 @@ import 'config/api_keys.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Initialize Supabase
+
   await Supabase.initialize(
     url: ApiKeys.supabaseUrl,
     anonKey: ApiKeys.supabaseAnonKey,
   );
-  
-  // Initialize other services
+
   await ReminderService.initialize();
   await VoiceService.initialize();
-  
-  runApp(const CareSyncApp());
+
+  runApp(const CareSync());
 }
 
-class CareSyncApp extends StatelessWidget {
-  const CareSyncApp({super.key});
+final supabase = Supabase.instance.client;
+
+class CareSync extends StatelessWidget {
+  const CareSync({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +30,7 @@ class CareSyncApp extends StatelessWidget {
       title: 'CareSync',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        primaryColor: const Color(0xFF2E7D6E),
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF2E7D6E),
         ),

@@ -6,6 +6,10 @@ list(APPEND FLUTTER_PLUGIN_LIST
   app_links
   flutter_tts
   permission_handler_windows
+<<<<<<< HEAD
+=======
+  printing
+>>>>>>> origin/dev2-backend
   url_launcher_windows
 )
 
