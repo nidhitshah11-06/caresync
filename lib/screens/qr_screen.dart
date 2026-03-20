@@ -24,7 +24,7 @@ class _QrScreenState extends State<QrScreen> {
   bool _isDownloading = false;
 
   String get _qrUrl =>
-      'https://caresync.app/patient/${widget.patientPublicId}';
+      'https://v0-patient-health-portal.vercel.app/patient/$patientPublicId';
 
   Future<void> _downloadQr() async {
     if (_isDownloading) return;
