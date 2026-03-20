@@ -4,10 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   gtk
-<<<<<<< HEAD
-=======
   printing
->>>>>>> origin/dev2-backend
   url_launcher_linux
 )
 

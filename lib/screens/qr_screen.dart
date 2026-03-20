@@ -24,7 +24,7 @@ class _QrScreenState extends State<QrScreen> {
   bool _isDownloading = false;
 
   String get _qrUrl =>
-      'https://v0-patient-health-portal.vercel.app/patient/$patientPublicId';
+      'https://v0-patient-health-portal.vercel.app/patient/${widget.patientPublicId}';
 
   Future<void> _downloadQr() async {
     if (_isDownloading) return;
@@ -33,7 +33,6 @@ class _QrScreenState extends State<QrScreen> {
     try {
       const double qrSize = 250;
 
-      // Generate QR as PNG bytes (no extra screenshot/gallery dependency).
       final painter = QrPainter(
         data: _qrUrl,
         version: QrVersions.auto,
@@ -80,8 +79,6 @@ class _QrScreenState extends State<QrScreen> {
   }
 
   Future<void> _shareQr() async {
-    // Without adding extra packages, sharing is implemented as copying the
-    // QR URL to clipboard (user can paste it anywhere).
     try {
       await Clipboard.setData(ClipboardData(text: _qrUrl));
       if (!mounted) return;
@@ -158,9 +155,7 @@ class _QrScreenState extends State<QrScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: teal,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 14,
-                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -177,9 +172,7 @@ class _QrScreenState extends State<QrScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: teal,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            vertical: 14,
-                          ),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(14),
                           ),
@@ -208,4 +201,3 @@ class _QrScreenState extends State<QrScreen> {
     );
   }
 }
-
