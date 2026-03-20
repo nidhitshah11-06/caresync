@@ -25,7 +25,7 @@ String _guessContentType(String filePath) {
   }
 }
 
-Future<void> savePrescription({
+Future<void> _savePrescriptionToDatabase({
   required String patientId,
   required String originalImageUrl,
   required String doctorName,
@@ -82,9 +82,7 @@ Future<String> uploadPrescriptionImage({
       : 'prescription_${DateTime.now().millisecondsSinceEpoch}';
   final String storagePath = 'prescriptions/$baseName$resolvedExt';
 
-  await supabase.storage
-      .from(bucket)
-      .upload(
+  await supabase.storage.from(bucket).upload(
         storagePath,
         file,
         fileOptions: FileOptions(contentType: _guessContentType(imageFilePath)),
@@ -111,9 +109,7 @@ Future<String> uploadMedicinePhoto({
       : 'medicine_${DateTime.now().millisecondsSinceEpoch}';
   final String storagePath = 'medicines/$baseName$resolvedExt';
 
-  await supabase.storage
-      .from(bucket)
-      .upload(
+  await supabase.storage.from(bucket).upload(
         storagePath,
         file,
         fileOptions: FileOptions(contentType: _guessContentType(imageFilePath)),
@@ -121,4 +117,54 @@ Future<String> uploadMedicinePhoto({
 
   // Requires the bucket (or object) to be configured for public access.
   return supabase.storage.from(bucket).getPublicUrl(storagePath);
+}
+
+/// Service class for Supabase operations from the Flutter app
+class SupabaseService {
+  /// Save prescription from verification screen
+  Future<void> savePrescription({
+    required String patientId,
+    required String patientName,
+    required List<Map<String, dynamic>> medicines,
+    String? prescriptionImagePath,
+  }) async {
+    try {
+      String? imageUrl;
+
+      // Upload image if provided
+      if (prescriptionImagePath != null && prescriptionImagePath.isNotEmpty) {
+        try {
+          imageUrl = await uploadPrescriptionImage(
+            imageFilePath: prescriptionImagePath,
+          );
+        } catch (e) {
+          print('⚠️ Image upload failed, continuing without image: $e');
+          imageUrl = null;
+        }
+      }
+
+      // Prepare extracted data
+      final extractedData = {
+        'patient_name': patientName,
+        'medicines': medicines,
+        'extracted_at': DateTime.now().toIso8601String(),
+      };
+
+      // Call the database save function
+      await _savePrescriptionToDatabase(
+        patientId: patientId,
+        originalImageUrl: imageUrl ?? '',
+        doctorName: 'Self-scanned',
+        hospitalName: 'CareSync Mobile App',
+        prescriptionDate: DateTime.now(),
+        medicines: medicines,
+        extractedData: extractedData,
+      );
+
+      print('✅ Prescription saved successfully for patient: $patientId');
+    } catch (e) {
+      print('❌ Error saving prescription: $e');
+      rethrow;
+    }
+  }
 }

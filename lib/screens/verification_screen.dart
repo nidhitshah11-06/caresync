@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../services/ocr_service.dart';
 import '../services/gemini_service.dart';
 import '../services/reminder_service.dart';
+import '../services/supabase_service.dart';
+import '../services/patient_service.dart';
 
 class VerificationScreen extends StatefulWidget {
   final String? imagePath;
@@ -111,8 +113,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Row(
           children: [
             Icon(Icons.warning_amber_rounded,
@@ -141,11 +142,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('⚠️ ',
-                          style: TextStyle(fontSize: 14)),
+                      const Text('⚠️ ', style: TextStyle(fontSize: 14)),
                       Expanded(
-                        child: Text(w,
-                            style: const TextStyle(fontSize: 13)),
+                        child: Text(w, style: const TextStyle(fontSize: 13)),
                       ),
                     ],
                   ),
@@ -169,14 +168,13 @@ class _VerificationScreenState extends State<VerificationScreen> {
   }
 
   void _editField(int index, String field, String current) {
-    final controller = TextEditingController(
-        text: current == 'UNCLEAR' ? '' : current);
+    final controller =
+        TextEditingController(text: current == 'UNCLEAR' ? '' : current);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: Colors.white,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           'Edit $field',
           style: const TextStyle(
@@ -195,27 +193,23 @@ class _VerificationScreenState extends State<VerificationScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide:
-                  const BorderSide(color: Color(0xFF2E7D6E), width: 2),
+              borderSide: const BorderSide(color: Color(0xFF2E7D6E), width: 2),
             ),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel',
-                style: TextStyle(color: Colors.grey)),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
             onPressed: () {
               setState(() {
                 _medicines[index][field.toLowerCase()] =
-                    controller.text.isEmpty
-                        ? 'UNCLEAR'
-                        : controller.text;
-                _medicines[index]['unclear'] = _medicines[index]
-                    .values
-                    .any((v) => v == 'UNCLEAR');
+                    controller.text.isEmpty ? 'UNCLEAR' : controller.text;
+                _medicines[index]['unclear'] =
+                    _medicines[index].values.any((v) => v == 'UNCLEAR');
               });
               Navigator.pop(ctx);
             },
@@ -224,8 +218,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8)),
             ),
-            child: const Text('Save',
-                style: TextStyle(color: Colors.white)),
+            child: const Text('Save', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -242,8 +235,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
     if (_hasUnclear) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content:
-              Text('⚠️ Please fix all UNCLEAR fields before confirming'),
+          content: Text('⚠️ Please fix all UNCLEAR fields before confirming'),
           backgroundColor: Color(0xFFE53935),
         ),
       );
@@ -253,6 +245,22 @@ class _VerificationScreenState extends State<VerificationScreen> {
     setState(() => _isSaving = true);
 
     try {
+      // Get current patient
+      final patient = await PatientService.getCurrentPatient();
+
+      if (patient == null) {
+        throw Exception('Patient not found. Please login again.');
+      }
+
+      // Save prescription to Supabase
+      final supabaseService = SupabaseService();
+      await supabaseService.savePrescription(
+        patientId: patient.id,
+        patientName: patient.name,
+        medicines: _medicines,
+        prescriptionImagePath: widget.imagePath,
+      );
+
       // Schedule reminders for each medicine
       for (int i = 0; i < _medicines.length; i++) {
         final med = _medicines[i];
@@ -291,7 +299,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('✅ Prescription saved and reminders set!'),
+          content: Text('✅ Prescription saved to cloud and reminders set!'),
           backgroundColor: Color(0xFF4CAF50),
         ),
       );
@@ -300,6 +308,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
         if (mounted) Navigator.popUntil(context, (route) => route.isFirst);
       });
     } catch (e) {
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error saving: ${e.toString()}'),
@@ -396,8 +406,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
           Container(
             width: double.infinity,
             color: const Color(0xFFFFF3CD),
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             child: const Row(
               children: [
                 Icon(Icons.warning_amber_rounded,
@@ -406,8 +415,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 Expanded(
                   child: Text(
                     'Some fields are UNCLEAR — tap ✏️ to fix them.',
-                    style: TextStyle(
-                        color: Color(0xFF856404), fontSize: 13),
+                    style: TextStyle(color: Color(0xFF856404), fontSize: 13),
                   ),
                 ),
               ],
@@ -447,8 +455,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                   child: const Text(
                     '⚠️ Fix all UNCLEAR fields to enable Save',
                     textAlign: TextAlign.center,
-                    style:
-                        TextStyle(color: Color(0xFFE53935), fontSize: 13),
+                    style: TextStyle(color: Color(0xFFE53935), fontSize: 13),
                   ),
                 ),
               SizedBox(
@@ -508,8 +515,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               color: med['unclear'] == true
                   ? const Color(0xFFFFF8E1)
@@ -528,8 +534,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                     child: _buildUnclearField(med['name'], 'name',
                         isHeader: true)),
                 IconButton(
-                  onPressed: () =>
-                      _editField(index, 'name', med['name']),
+                  onPressed: () => _editField(index, 'name', med['name']),
                   icon: const Icon(Icons.edit,
                       color: Color(0xFF2E7D6E), size: 18),
                   padding: EdgeInsets.zero,
@@ -545,8 +550,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
                 _buildRow(index, 'Timing', 'timing', med['timing'],
                     Icons.access_time),
                 const Divider(height: 20),
-                _buildRow(index, 'Duration', 'duration',
-                    med['duration'], Icons.calendar_today),
+                _buildRow(index, 'Duration', 'duration', med['duration'],
+                    Icons.calendar_today),
                 const Divider(height: 20),
                 _buildRow(index, 'Instructions', 'instructions',
                     med['instructions'], Icons.info_outline),
@@ -558,8 +563,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
     );
   }
 
-  Widget _buildRow(int index, String label, String field, String value,
-      IconData icon) {
+  Widget _buildRow(
+      int index, String label, String field, String value, IconData icon) {
     return Row(
       children: [
         Icon(icon, color: Colors.grey[400], size: 18),
@@ -575,8 +580,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
         Expanded(child: _buildUnclearField(value, field)),
         IconButton(
           onPressed: () => _editField(index, label, value),
-          icon: const Icon(Icons.edit,
-              color: Color(0xFF2E7D6E), size: 16),
+          icon: const Icon(Icons.edit, color: Color(0xFF2E7D6E), size: 16),
           padding: EdgeInsets.zero,
           constraints: const BoxConstraints(),
         ),
