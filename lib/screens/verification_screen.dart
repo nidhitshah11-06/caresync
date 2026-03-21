@@ -4,10 +4,12 @@ import '../services/gemini_service.dart';
 import '../services/reminder_service.dart';
 import '../services/supabase_service.dart';
 import '../services/patient_service.dart';
+import 'dart:typed_data';
 
 class VerificationScreen extends StatefulWidget {
   final String? imagePath;
-  const VerificationScreen({Key? key, this.imagePath}) : super(key: key);
+  final Uint8List? imageBytes;
+  const VerificationScreen({Key? key, this.imagePath, this.imageBytes}) : super(key: key);
 
   @override
   State<VerificationScreen> createState() => _VerificationScreenState();
