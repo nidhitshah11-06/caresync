@@ -1,3 +1,4 @@
+import 'screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'screens/splash_screen.dart';
@@ -39,46 +40,8 @@ class CareSync extends StatelessWidget {
         fontFamily: 'Poppins',
       ),
       home: supabase.auth.currentSession == null
-          ? const LoginScreen()
-          : const SplashScreen(),
+    ? const LoginScreen()
+    : const SplashScreen(),
     );
   }
 }
-```
-
----
-
-**Step 5 — Paste into the empty file**
-
-Click in the empty middle screen.
-
-Press:
-```
-Ctrl + V
-```
-
-You should now see all the code appear.
-
----
-
-**Step 6 — Save the file**
-
-Press:
-```
-Ctrl + S
-```
-
-You will see the orange dot on the tab disappear — that means it is saved.
-
----
-
-**Step 7 — Check for errors**
-
-Look at the bottom of VS Code. It shows:
-```
-0 errors   0 warnings   ← perfect
-```
-
-or
-```
-2 errors   ← tell me what errors appear
